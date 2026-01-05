@@ -1,0 +1,13 @@
+services:
+  fdisk-with-caps:
+    image: ubuntu-unpriveleged-user
+    container_name: fdisk-with-caps
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_READ_SEARCH
+    stdin_open: true
+    tty: true
+    user: root
+    volumes:
+      - /:/host:ro

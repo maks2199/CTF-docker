@@ -1,0 +1,12 @@
+# docker-compose.secure.yml
+services:
+  secure-app:
+    image: alpine
+    container_name: secure-app
+    command: sh -c "sleep infinity"
+    cap_drop:
+      - ALL # Drop everything first
+    cap_add:
+      - NET_BIND_SERVICE # Add back only what's needed (if any)
+    security_opt:
+      - no-new-privileges:true

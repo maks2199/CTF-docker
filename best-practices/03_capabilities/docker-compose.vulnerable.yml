@@ -1,0 +1,7 @@
+# docker-compose.vulnerable.yml
+services:
+  vulnerable-app:
+    image: alpine
+    container_name: vulnerable-app
+    command: sh -c "sleep infinity"
+    # No capability restrictions - container has default ~14 capabilities

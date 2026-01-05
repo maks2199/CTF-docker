@@ -1,0 +1,12 @@
+services:
+  fdisk-no-caps:
+    image: ubuntu-unpriveleged-user
+    container_name: fdisk-no-caps
+    privileged: true # Equivalent to --privileged
+    stdin_open: true # Equivalent to -i
+    tty: true # Equivalent to -t
+    user: root
+    volumes:
+      - /:/host:ro
+    cap_drop:
+      - ALL

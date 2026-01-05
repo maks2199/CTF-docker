@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  vulnerable-dac:
+    image: ubuntu
+    container_name: vuln-dac
+    cap_add:
+      - DAC_OVERRIDE # Игнорирует права на запись
+      - DAC_READ_SEARCH # Игнорирует права на чтение
+    volumes:
+      - /etc:/host-etc:ro # Монтируем /etc хоста (типичная ошибка!)
+    stdin_open: true
+    tty: true

@@ -1,9 +1,0 @@
-services:
-  fdisk-no-caps:
-    build: .
-    image: fdisk-demo
-    container_name: fdisk-no-caps
-    user: appuser
-    command: fdisk -l
-    stdin_open: true
-    tty: true
