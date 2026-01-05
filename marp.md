@@ -346,7 +346,7 @@ docker run -it --privileged --name ctf-task1 ubuntu
 1. Установите утилиту для работы с дисками`apt-get update` `apt-get -y install fdisk`
 2. Проверьте доступные диски: `fdisk -l`,
 3. Найдите основной диск хоста (обычно `/dev/sda1` или `/dev/vda1`)
-4. Смонтируйте диск: `mkdir /mnt/host && mount /dev/sda1 /mnt/host`
+4. Смонтируйте диск: `mkdir /mnt/host && mount /dev/nvme0n1p2 /mnt/host`
 5. Теперь ФС хоста доступна: `cat /mnt/host/root/flag.txt`
 
 ---
@@ -487,7 +487,7 @@ docker run -it -v /var/run/docker.sock:/var/run/docker.sock \
 
 # ❓ Вопрос
 
-Как мы полчуили доступ к /root/flag.txt, мы ведь не монтировали его внутрь первого контейнера?
+Как мы получили доступ к /root/flag.txt, мы ведь не монтировали его внутрь первого контейнера?
 
 ---
 
@@ -500,7 +500,7 @@ docker run -it -v /var/run/docker.sock:/var/run/docker.sock \
 
 # ❓ Вопрос
 
-Как мы полчуили доступ к /root/flag.txt, мы ведь не монтировали его внутрь первого контейнера?
+Как мы получили доступ к /root/flag.txt, мы ведь не монтировали его внутрь первого контейнера?
 
 > Docker socket — это не файл с данными, а API для управления Docker daemon. Когда ты выполняешь docker run ... из контейнера A:
 
@@ -767,6 +767,29 @@ docker run -it --privileged --name ctf-task1 --user appuser:appuser ubuntu-unpri
   <div class="timeline-item future">Инструменты</div>
 </div>
 
+# ❌ docker-compose.yml: Плохой пример
+
+❓ Какие здесь есть уязвимости?
+
+```yaml
+# docker-compose.vulnerable.yml
+services:
+  vulnerable-app:
+    image: alpine
+    container_name: vulnerable-app
+    command: sh -c "sleep infinity"
+    # No capability restrictions - container has default ~14 capabilities
+```
+
+---
+
+<div class="timeline">
+  <div class="timeline-item done">Инциденты</div>
+  <div class="timeline-item done">Векторы атаки</div>
+  <div class="timeline-item current">Лучшие практики</div>
+  <div class="timeline-item future">Инструменты</div>
+</div>
+
 ## ✅ docker-compose.yml: Хороший пример
 
 ```yaml
@@ -789,28 +812,7 @@ services:
 
 ---
 
-<div class="timeline">
-  <div class="timeline-item done">Инциденты</div>
-  <div class="timeline-item done">Векторы атаки</div>
-  <div class="timeline-item current">Лучшие практики</div>
-  <div class="timeline-item future">Инструменты</div>
-</div>
-
-# ❌ Все capabilities: Плохой пример
-
-Пробуем!
-
-```yaml
-# docker-compose.vulnerable.yml
-services:
-  vulnerable-app:
-    image: alpine
-    container_name: vulnerable-app
-    command: sh -c "sleep infinity"
-    # No capability restrictions - container has default ~14 capabilities
-```
-
----
+# Пробуем compose с неограниченными cap
 
 ```bash
 docker compose -f docker-compose.vulnerable.yml up -d
@@ -858,6 +860,8 @@ services:
 ```
 
 ---
+
+# Пробуем compose с ограниченными cap
 
 ```bash
 docker compose -f docker-compose.secure.yml up -d
